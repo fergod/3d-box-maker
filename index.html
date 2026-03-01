@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蜂窝收纳盒 3D模型代码生成器</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-hover: #45a049;
+            --bg: #f4f7f6;
+            --text: #333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 300px;
+        }
+        h1, h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        /* 新增：小红书风格的作者标签 */
+        .author-badge {
+            display: inline-block;
+            background-color: #fff0f0;
+            color: #ff2442;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border: 1px solid #ffe0e0;
+        }
+        .author-badge a {
+            color: #ff2442;
+            text-decoration: none;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-copy {
+            background-color: #008CBA;
+            margin-top: 10px;
+        }
+        .btn-copy:hover {
+            background-color: #007B9E;
+        }
+        .code-container {
+            position: relative;
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            overflow: auto;
+            max-height: 600px;
+        }
+        pre {
+            margin: 0;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+        .tip {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="panel">
+        <h1>📦 蜂窝盒子生成器</h1>
+        <div class="author-badge">
+            💡 作者：小红书 @库库学点新东西
+        </div>
+        <p style="font-size: 14px; color: #666; margin-top: 0;">输入你想要的尺寸（单位：毫米 mm），点击生成代码。</p>
+        
+        <div class="row">
+            <div class="form-group">
+                <label>长 (Length)</label>
+                <input type="number" id="p_length" value="200" step="1">
+            </div>
+            <div class="form-group">
+                <label>高 (Height)</label>
+                <input type="number" id="p_height" value="60" step="1">
+            </div>
+            <div class="form-group">
+                <label>宽 (Width)</label>
+                <input type="number" id="p_width" value="25" step="1">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>壁厚 (Wall Thickness)</label>
+                <input type="number" id="p_wall" value="2.5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>圆角半径 (Corner Radius)</label>
+                <input type="number" id="p_corner" value="3" step="0.5">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label>边缘保留实心 (Margin)</label>
+                <input type="number" id="p_margin" value="3" step="0.5">
+                <div class="tip">防撞边的宽度，建议 ≥3</div>
+            </div>
+            <div class="form-group">
+                <label>圆滑度 ($fn)</label>
+                <input type="number" id="p_fn" value="24" step="1">
+                <div class="tip">数值越大越圆，但渲染越慢</div>
+            </div>
+        </div>
+
+        <h3 style="margin-top: 20px; border-bottom: 1px solid #eee; padding-bottom: 5px;">蜂窝设置</h3>
+        <div class="row">
+            <div class="form-group">
+                <label>蜂窝孔半径 (Hex Size)</label>
+                <input type="number" id="p_hexSize" value="3.5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>蜂窝骨架宽度 (Hex Wall)</label>
+                <input type="number" id="p_hexWall" value="1.2" step="0.1">
+            </div>
+        </div>
+
+        <button onclick="generateCode()">⚙️ 生成 OpenSCAD 代码</button>
+    </div>
+
+    <div class="panel" style="flex: 1.5;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="margin: 0;">💻 你的代码</h2>
+            <button class="btn-copy" id="copyBtn" onclick="copyCode()" style="width: auto; padding: 8px 15px;">📋 复制代码</button>
+        </div>
+        <div class="code-container">
+            <pre><code id="codeOutput">// 点击左侧“生成”按钮获取代码...</code></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getScadTemplate(config) {
+        return `// --- 参数设置 (单位: mm) ---
+// 💡 作者：小红书 @库库学点新东西
+
+box_len   = ${config.len};   // 长
+box_height= ${config.height};    // 高
+box_width = ${config.width};    // 宽
+wall_thick= ${config.wall};   // 壁厚
+margin    = ${config.margin};     // 离边缘保留的实心距离
+corner_r  = ${config.corner};     // 圆角半径
+
+// 蜂窝设置
+hex_size  = ${config.hexSize};   // 六边形半径
+hex_wall  = ${config.hexWall};   // 蜂窝骨架粗细
+$fn       = ${config.fn};    // 圆滑度
+
+// --- 主程序 ---
+difference() {
+    rounded_open_box();
+
+    cut_w_front = box_len - 2*corner_r - 2*margin;
+    cut_h_front = box_height - corner_r - 2*margin; 
+    
+    translate([0, -box_width/2, box_height/2 + (corner_r)/2]) 
+        rotate([90, 0, 0])
+        safe_honeycomb_cut(cut_w_front, cut_h_front, wall_thick*3);
+        
+    translate([0, box_width/2, box_height/2 + (corner_r)/2])
+        rotate([90, 0, 0])
+        safe_honeycomb_cut(cut_w_front, cut_h_front, wall_thick*3);
+
+    cut_w_bottom = box_len - 2*corner_r - 2*margin;
+    cut_d_bottom = box_width - 2*corner_r - 2*margin;
+    
+    if (cut_d_bottom > hex_size) { 
+        translate([0, 0, 0])
+            safe_honeycomb_cut(cut_w_bottom, cut_d_bottom, wall_thick*3);
+    }
+
+    cut_w_side = box_width - 2*corner_r - 2*margin;
+    cut_h_side = box_height - corner_r - 2*margin;
+    
+    if (cut_w_side > hex_size) {
+        translate([box_len/2, 0, box_height/2 + (corner_r)/2])
+            rotate([0, 0, 90])
+            rotate([90, 0, 0])
+            safe_honeycomb_cut(cut_w_side, cut_h_side, wall_thick*3);
+            
+        translate([-box_len/2, 0, box_height/2 + (corner_r)/2])
+            rotate([0, 0, 90])
+            rotate([90, 0, 0])
+            safe_honeycomb_cut(cut_w_side, cut_h_side, wall_thick*3);
+    }
+}
+
+// --- 模块定义 ---
+
+module rounded_open_box() {
+    difference() {
+        hull() {
+            for (x = [-1, 1]) for (y = [-1, 1])
+                translate([x*(box_len/2 - corner_r), y*(box_width/2 - corner_r), corner_r])
+                sphere(r=corner_r);
+            
+            for (x = [-1, 1]) for (y = [-1, 1])
+                translate([x*(box_len/2 - corner_r), y*(box_width/2 - corner_r), box_height])
+                cylinder(r=corner_r, h=0.1); 
+        }
+        
+        translate([0, 0, wall_thick]) 
+        hull() {
+            for (x = [-1, 1]) for (y = [-1, 1])
+                translate([x*(box_len/2 - corner_r - wall_thick), y*(box_width/2 - corner_r - wall_thick), corner_r])
+                sphere(r=corner_r); 
+            
+            for (x = [-1, 1]) for (y = [-1, 1])
+                translate([x*(box_len/2 - corner_r - wall_thick), y*(box_width/2 - corner_r - wall_thick), box_height+1])
+                cylinder(r=corner_r, h=0.1);
+        }
+        
+        translate([0, 0, box_height])
+            cube([box_len+10, box_width+10, 2], center=true);
+    }
+}
+
+module safe_honeycomb_cut(target_w, target_h, depth) {
+    render(convexity=4) 
+    intersection() {
+        cube([target_w, target_h, depth], center=true);
+        hex_pattern_sheet(target_w + hex_size*4, target_h + hex_size*4, depth + 1);
+    }
+}
+
+module hex_pattern_sheet(w, h, depth) {
+    dx = hex_size * sqrt(3) + hex_wall;
+    dy = hex_size * 1.5 + hex_wall * sqrt(3)/2;
+    nx = w / dx;
+    ny = h / dy;
+    
+    translate([-w/2, -h/2, -depth/2])
+    for (y = [0:ny]) {
+        for (x = [0:nx]) {
+            translate([
+                x * dx + (y%2==0 ? 0 : dx/2), 
+                y * dy, 
+                0
+            ])
+            rotate([0,0,30])
+            cylinder(r=hex_size, h=depth, $fn=6);
+        }
+    }
+}`;
+    }
+
+    function generateCode() {
+        const config = {
+            len: document.getElementById('p_length').value,
+            height: document.getElementById('p_height').value,
+            width: document.getElementById('p_width').value,
+            wall: document.getElementById('p_wall').value,
+            margin: document.getElementById('p_margin').value,
+            corner: document.getElementById('p_corner').value,
+            fn: document.getElementById('p_fn').value,
+            hexSize: document.getElementById('p_hexSize').value,
+            hexWall: document.getElementById('p_hexWall').value
+        };
+
+        const code = getScadTemplate(config);
+        document.getElementById('codeOutput').textContent = code;
+        
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.textContent = '📋 复制代码';
+        copyBtn.style.backgroundColor = '#008CBA';
+    }
+
+    function copyCode() {
+        const codeText = document.getElementById('codeOutput').textContent;
+        if (codeText.includes('点击左侧')) {
+            alert('请先点击生成代码！');
+            return;
+        }
+
+        navigator.clipboard.writeText(codeText).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.textContent = '✅ 已复制';
+            btn.style.backgroundColor = '#4CAF50';
+            
+            setTimeout(() => {
+                btn.textContent = '📋 复制代码';
+                btn.style.backgroundColor = '#008CBA';
+            }, 2000);
+        }).catch(err => {
+            console.error('复制失败', err);
+            alert('复制失败，请手动选择复制。');
+        });
+    }
+
+    window.onload = generateCode;
+</script>
+</body>
+</html>
